@@ -1,0 +1,8 @@
+# SatMAE feature extraction only (no training, no util/misc.py imports).
+# timm 0.3.2 is the version SatMAE was written against; it needs a one-line
+# patch for torch >= 1.9, applied by jobs/2_setup_satmae.sbatch.
+--extra-index-url https://download.pytorch.org/whl/cu113
+torch==1.12.1+cu113
+torchvision==0.13.1+cu113
+timm==0.3.2
+numpy==1.23.5

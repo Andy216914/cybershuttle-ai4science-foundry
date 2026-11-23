@@ -1,0 +1,12 @@
+# Conda part of the SatMAE environment: Python and pip only. The packages are
+# installed with pip from satmae_requirements.txt (jobs/2_setup_satmae.sbatch).
+# Versions follow the SatMAE recipe in PR #28 (DevP1130): Python 3.9,
+# torch 1.12.1 (CUDA 11.3), timm 0.3.2. torch comes from pip wheels rather
+# than conda, which avoids the MKL "iJIT_NotifyEvent" error reported for
+# conda builds of torch 1.12 on ICE (PR #38).
+name: satmae
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip=23.3.1
