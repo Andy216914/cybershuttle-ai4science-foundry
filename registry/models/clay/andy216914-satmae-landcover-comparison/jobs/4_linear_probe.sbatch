@@ -5,14 +5,15 @@
 #SBATCH --qos=coc-ice
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
-#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=24
+#SBATCH --mem=64G
+#SBATCH --time=02:00:00
 #SBATCH --output=results/logs/%x-%j.out
 #SBATCH --error=results/logs/%x-%j.err
 #
 # Job 4 (CPU): the same logistic-regression probe on every feature set;
-# metrics, paired tests, tables and figures into results/.
+# metrics, paired tests, tables and figures into results/. The 28 fits
+# (7 feature sets x 4 values of C) run in parallel, one per CPU.
 
 set -euo pipefail
 trap 'echo "== $SLURM_JOB_NAME FAILED at line $LINENO (exit $?)  $(date -Is)" >&2' ERR

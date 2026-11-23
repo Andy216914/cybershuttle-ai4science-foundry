@@ -4,7 +4,9 @@
 For each feature set: standardize (statistics from the training split),
 fit multinomial logistic regression for C in {0.01, 0.1, 1, 10}, keep the C
 with the best validation accuracy, and evaluate that model once on the test
-split. Nothing about the test split is used for any choice.
+split. Nothing about the test split is used for any choice. The fits for all
+(feature set, C) pairs run in parallel, one process per CPU of the job; each
+fit is the same as when run alone.
 
 Feature sets
   main        majority class; spectral stats (mean and std of the 10 bands);
@@ -22,12 +24,14 @@ figures/{confusion_matrices,per_class_accuracy}.png.
 """
 import argparse
 import json
+import os
 import time
 import warnings
 from pathlib import Path
 
 import matplotlib
 import numpy as np
+from joblib import Parallel, delayed
 from scipy.stats import binomtest
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import LogisticRegression
@@ -65,6 +69,16 @@ def feature_sets(data, emb):
     return sets
 
 
+def fit(x, y, tr, va, te, c):
+    """One probe: returns validation accuracy, test predictions, whether it failed to converge, seconds."""
+    t0 = time.perf_counter()
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", ConvergenceWarning)
+        m = LogisticRegression(C=c, max_iter=5000, random_state=SEED).fit(x[tr], y[tr])
+    not_converged = any(issubclass(x_.category, ConvergenceWarning) for x_ in w)
+    return float((m.predict(x[va]) == y[va]).mean()), m.predict(x[te]), not_converged, time.perf_counter() - t0
+
+
 def bootstrap_ci(correct, n_boot=2000):
     rng = np.random.default_rng(SEED)
     idx = rng.integers(0, len(correct), size=(n_boot, len(correct)))
@@ -92,29 +106,29 @@ def main():
     split = np.load(a.data / "split.npy")
     tr, va, te = split == 0, split == 1, split == 2
     sets = feature_sets(a.data, a.emb)
-    scaled = {}
+    mats = {}
+    for name, (group, desc, x) in sets.items():
+        if isinstance(x, str):              # concatenation of the two standardized main features
+            mats[name] = np.hstack([mats["clay"], mats["satmae"]])
+        elif x is not None:
+            mats[name] = standardize(x, tr)
+    tasks = sorted(((k, c) for k in mats for c in C_GRID), key=lambda t: -mats[t[0]].shape[1] * t[1])  # slowest first
+    workers = min(len(tasks), int(os.environ.get("SLURM_CPUS_PER_TASK") or os.cpu_count() or 1))
+    print(f"== {len(tasks)} fits on {workers} parallel workers", flush=True)
+    t0 = time.perf_counter()
+    fits = dict(zip(tasks, Parallel(n_jobs=workers)(delayed(fit)(mats[k], y, tr, va, te, c) for k, c in tasks)))
+    print(f"== all fits done in {time.perf_counter() - t0:.0f} s", flush=True)
     results, preds = {}, {}
     for name, (group, desc, x) in sets.items():
-        t0 = time.perf_counter()
         if x is None:
             majority = np.bincount(y[tr]).argmax()
-            pred, best_c, val_acc = np.full(te.sum(), majority), None, {}
+            pred, best_c, val_acc, seconds = np.full(te.sum(), majority), None, {}, 0.0
         else:
-            if isinstance(x, str):          # concatenation of the two standardized main features
-                x = np.hstack([scaled["clay"], scaled["satmae"]])
-            else:
-                x = standardize(x, tr)
-                scaled[name] = x
-            val_acc, models = {}, {}
-            for c in C_GRID:
-                with warnings.catch_warnings(record=True) as w:
-                    warnings.simplefilter("always", ConvergenceWarning)
-                    m = LogisticRegression(C=c, max_iter=5000, random_state=SEED).fit(x[tr], y[tr])
-                val_acc[str(c)] = float((m.predict(x[va]) == y[va]).mean())
-                models[c] = (m, any(issubclass(x_.category, ConvergenceWarning) for x_ in w))
+            x = mats[name]
+            val_acc = {str(c): fits[(name, c)][0] for c in C_GRID}
             best_c = max(C_GRID, key=lambda c: (val_acc[str(c)], -c))
-            model, not_converged = models[best_c]
-            pred = model.predict(x[te])
+            _, pred, not_converged, _ = fits[(name, best_c)]
+            seconds = sum(fits[(name, c)][3] for c in C_GRID)
         correct = pred == y[te]
         lo, hi = bootstrap_ci(correct)
         cm = confusion_matrix(y[te], pred, labels=range(len(classes)))
@@ -126,7 +140,7 @@ def main():
             "per_class_accuracy": {c: float(cm[i, i] / cm[i].sum()) for i, c in enumerate(classes)},
             "confusion_matrix": cm.tolist(),
             "converged": None if x is None else not not_converged,
-            "seconds": round(time.perf_counter() - t0, 1),
+            "fit_seconds_all_C": round(seconds, 1),
         }
         preds[name] = pred
         print(f"== {name:22s} test accuracy {correct.mean():.4f} [{lo:.4f}, {hi:.4f}]  best C {best_c}", flush=True)
@@ -143,6 +157,7 @@ def main():
     a.results.mkdir(parents=True, exist_ok=True)
     out = {"split_sizes": meta["split_sizes"], "classes": classes, "C_grid": C_GRID,
            "classifier": "sklearn LogisticRegression (lbfgs, multinomial), max_iter 5000, standardized features",
+           "parallel_workers": workers,
            "results": results, "paired_tests_mcnemar_exact": tests}
     (a.results / "metrics.json").write_text(json.dumps(out, indent=2) + "\n")
 
