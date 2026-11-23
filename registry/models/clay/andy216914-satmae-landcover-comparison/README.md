@@ -45,7 +45,7 @@ results/           band_order.json, metrics.json, results_table.md, test_predict
 ```
 
 Large files (dataset, packed arrays, SatMAE environment and checkpoint,
-features) stay in `$CLAY_WORKDIR/satmae-landcover/` on scratch, about 15 GB.
+features) stay in `$CLAY_WORKDIR/satmae-landcover/` on scratch.
 
 ## 4. Running it
 
@@ -78,7 +78,8 @@ Each job logs to `results/logs/<job>-<id>.out`; a successful job ends with
 ## 5. Results
 
 One run on PACE ICE, 2026-11-22: jobs 1–3 at commit `2d29fa7`, job 4 at
-`d70ff58` (the parallel probe). Every job log is in `results/logs/`.
+`d70ff58` (the parallel probe). The logs of jobs 1–4 are in `results/logs/`
+(the Clay setup jobs, when submitted, log into the inference recipe's folder).
 
 **Band order** (`results/band_order.json`). The darkest band (mean 12 DN, the
 cirrus band B10) is at file index 9, and the band at index 12 correlates 0.998
@@ -105,7 +106,7 @@ Paired McNemar tests on the same test images (images only A gets right vs.
 only B): Clay vs. SatMAE 241 vs. 59 (p = 3 × 10⁻²⁷); Clay + SatMAE vs. Clay
 26 vs. 15 (p = 0.12); SatMAE, correct vs. published band order 122 vs. 159
 (p = 0.03, not significant after a Bonferroni correction for the five tests);
-each model vs. spectral statistics p < 10⁻⁴⁸. All 28 fits converged.
+each model vs. spectral statistics p < 10⁻⁴⁸. Every selected model converged.
 
 **Observations**
 
@@ -113,11 +114,12 @@ each model vs. spectral statistics p < 10⁻⁴⁸. All 28 fits converged.
    accuracy, 10 points above the spectral baseline, although Clay never saw
    EuroSAT and received no date or location.
 2. Clay beats SatMAE by 3.4 points, and in every class; the largest gaps are
-   Highway (0.946 vs. 0.861) and River (0.977 vs. 0.934). The gap holds for
+   Highway (0.946 vs. 0.861), herbaceous vegetation (0.967 vs. 0.921) and
+   river (0.977 vs. 0.934). The gap holds for
    both pooling choices, so it is not about which token is used. A plausible
    reason, not tested here: Clay's training also matches DINOv2 features,
    which tends to give embeddings that work with a linear classifier, while
-   SatMAE is a plain masked autoencoder meant to be fine-tuned.
+   SatMAE is a plain masked autoencoder usually fine-tuned before use.
 3. Joining the two adds 0.2 points, which is not significant: at this level
    SatMAE adds little that Clay does not already have.
 4. The band-order error is silent. With the published order SatMAE is not
@@ -130,8 +132,8 @@ each model vs. spectral statistics p < 10⁻⁴⁸. All 28 fits converged.
 on 8 CPUs and was cancelled after 24 minutes with 3 of 8 feature sets done (log
 kept, `poc-linear-probe-7245718`). With the fits in parallel on 24 CPUs it took
 1 min 53 s. Clay's result was identical in both runs; the spectral baseline
-differed by 5 test images (0.8772 vs. 0.8763), a floating-point effect of the
-different thread counts.
+differed by 5 test images (0.8772 vs. 0.8763), most likely a floating-point
+effect of the different thread counts.
 
 ## 6. Limitations
 
@@ -139,13 +141,15 @@ different thread counts.
   statistics are for Level-2A. This follows Clay's own EuroSAT code.
 - Clay receives zeros for time and location, as in Clay's EuroSAT code,
   although the GeoTIFFs are georeferenced.
-- SatMAE sees images upsampled from 64 to 96 px; Clay sees them at 64 px.
+- SatMAE sees images resized from 64 to 109 px and center-cropped to 96 px
+  (its evaluation transform); Clay sees them at 64 px.
 - Frozen features and a linear probe only; one standard split and one run, so
   the intervals reflect only the sampling of test images.
 - SatMAE's best C is the largest in the grid, but its validation accuracy had
   levelled off (0.952 at C = 1 and at C = 10).
-- The explanations in observations 2 and 4 are hypotheses; the experiment
-  measures the differences, not their causes.
+- The explanations offered for observation 2 and for the spectral difference
+  in the run record are hypotheses; the experiment measures the differences,
+  not their causes.
 
 ## 7. Credits
 
