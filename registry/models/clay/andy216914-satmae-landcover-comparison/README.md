@@ -70,14 +70,68 @@ Slurm expects to start first (`POC_GPU=a100 bash run_all.sh` to choose).
 | 1 `prepare_data` | CPU, 4 cores, 32 GB | download and check EuroSAT, determine band order, pack arrays |
 | 2 `setup_satmae` | CPU, 4 cores, 16 GB | SatMAE code, environment, checkpoint (download limited by Zenodo, ~20 min) |
 | 3 `extract_features` | 1 GPU, 48 GB | Clay and SatMAE features for all 27,000 images |
-| 4 `linear_probe` | CPU, 8 cores, 32 GB | probes, metrics, figures |
+| 4 `linear_probe` | CPU, 24 cores, 64 GB | probes (28 fits in parallel), metrics, figures; about 2 min |
 
 Each job logs to `results/logs/<job>-<id>.out`; a successful job ends with
 `... COMPLETED`.
 
 ## 5. Results
 
-Filled in from `results/` after the run.
+One run on PACE ICE, 2026-11-22: jobs 1–3 at commit `2d29fa7`, job 4 at
+`d70ff58` (the parallel probe). Every job log is in `results/logs/`.
+
+**Band order** (`results/band_order.json`). The darkest band (mean 12 DN, the
+cirrus band B10) is at file index 9, and the band at index 12 correlates 0.998
+with B08. So TorchGeo's copy stores B8A last, as TorchGeo says, and Clay's
+EuroSAT code reads it correctly. SatMAE's EuroSAT code assumes B8A is ninth
+(its normalization constants put the near-zero cirrus mean at index 10). On
+this copy it therefore feeds B09 where B8A belongs, B12 where B11 belongs and
+B8A where B12 belongs, and never sees B11. Nothing fails or warns.
+
+**Linear probes** (test split, 5,400 images; `results/results_table.md`, `results/metrics.json`)
+
+| Features | Dim | Best C | Test accuracy [95% CI] | Macro-F1 |
+|---|---|---|---|---|
+| Majority class | – | – | 0.103 [0.095, 0.111] | 0.019 |
+| Spectral statistics | 20 | 10 | 0.876 [0.868, 0.885] | 0.871 |
+| **Clay v1.5** (class token) | 1,024 | 0.01 | **0.978** [0.974, 0.982] | 0.977 |
+| **SatMAE** (patch average) | 1,024 | 10 | **0.944** [0.938, 0.950] | 0.942 |
+| Clay + SatMAE | 2,048 | 0.01 | 0.980 [0.976, 0.984] | 0.979 |
+| Clay, patch average | 1,024 | 0.1 | 0.977 [0.973, 0.981] | 0.976 |
+| SatMAE, class token | 1,024 | 1 | 0.946 [0.940, 0.952] | 0.943 |
+| SatMAE, published band order | 1,024 | 1 | 0.951 [0.945, 0.956] | 0.948 |
+
+Paired McNemar tests on the same test images (images only A gets right vs.
+only B): Clay vs. SatMAE 241 vs. 59 (p = 3 × 10⁻²⁷); Clay + SatMAE vs. Clay
+26 vs. 15 (p = 0.12); SatMAE, correct vs. published band order 122 vs. 159
+(p = 0.03, not significant after a Bonferroni correction for the five tests);
+each model vs. spectral statistics p < 10⁻⁴⁸. All 28 fits converged.
+
+**Observations**
+
+1. Frozen Clay embeddings transfer to Sentinel-2 land cover: 97.8% test
+   accuracy, 10 points above the spectral baseline, although Clay never saw
+   EuroSAT and received no date or location.
+2. Clay beats SatMAE by 3.4 points, and in every class; the largest gaps are
+   Highway (0.946 vs. 0.861) and River (0.977 vs. 0.934). The gap holds for
+   both pooling choices, so it is not about which token is used. A plausible
+   reason, not tested here: Clay's training also matches DINOv2 features,
+   which tends to give embeddings that work with a linear classifier, while
+   SatMAE is a plain masked autoencoder meant to be fine-tuned.
+3. Joining the two adds 0.2 points, which is not significant: at this level
+   SatMAE adds little that Clay does not already have.
+4. The band-order error is silent. With the published order SatMAE is not
+   worse (0.7 points higher, not significant after correction), so accuracy
+   cannot reveal this kind of preprocessing error; checking the data can.
+
+**Run record.** GPU: Tesla V100-PCIE-16GB. Clay took 99 s for 27,000 images
+(2.97 GB peak GPU memory), SatMAE 723 s and 822 s for the two band orders; job
+3 took 30 min 33 s in total. Job 4 first fitted the probes one after another
+on 8 CPUs and was cancelled after 24 minutes with 3 of 8 feature sets done (log
+kept, `poc-linear-probe-7245718`). With the fits in parallel on 24 CPUs it took
+1 min 53 s. Clay's result was identical in both runs; the spectral baseline
+differed by 5 test images (0.8772 vs. 0.8763), a floating-point effect of the
+different thread counts.
 
 ## 6. Limitations
 
@@ -86,7 +140,12 @@ Filled in from `results/` after the run.
 - Clay receives zeros for time and location, as in Clay's EuroSAT code,
   although the GeoTIFFs are georeferenced.
 - SatMAE sees images upsampled from 64 to 96 px; Clay sees them at 64 px.
-- Frozen features and a linear probe only; one standard split.
+- Frozen features and a linear probe only; one standard split and one run, so
+  the intervals reflect only the sampling of test images.
+- SatMAE's best C is the largest in the grid, but its validation accuracy had
+  levelled off (0.952 at C = 1 and at C = 10).
+- The explanations in observations 2 and 4 are hypotheses; the experiment
+  measures the differences, not their causes.
 
 ## 7. Credits
 

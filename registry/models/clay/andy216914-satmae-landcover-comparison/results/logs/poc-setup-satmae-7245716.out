@@ -1,0 +1,69 @@
+---------------------------------------
+Begin Slurm Prolog: Nov-22-2026 19:16:21
+Job ID:    7245716
+User ID:   sjin308
+Account:   coc
+Job name:  poc-setup-satmae
+Partition: coc-cpu
+QOS:       coc-ice
+---------------------------------------
+== poc-setup-satmae  job=7245716  node=atl1-1-02-010-2-2.pace.gatech.edu  start=2026-11-22T19:16:21-05:00
+== commit 2d29fa7  folder tree bb5456921429d788f723805e4dc9844a901e4f7c  uncommitted code changes: 0
+== SatMAE code at 0b210aceb37a14bbbd897110db5b104b3271d818
+== Environment at /home/hice1/sjin308/scratch/clay/satmae-landcover/envs/satmae
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+Looking in indexes: https://pypi.org/simple, https://download.pytorch.org/whl/cu113
+Collecting torch==1.12.1+cu113 (from -r env/satmae_requirements.txt (line 5))
+  Downloading https://download-r2.pytorch.org/whl/cu113/torch-1.12.1%2Bcu113-cp39-cp39-linux_x86_64.whl (1837.7 MB)
+Collecting torchvision==0.13.1+cu113 (from -r env/satmae_requirements.txt (line 6))
+  Downloading https://download-r2.pytorch.org/whl/cu113/torchvision-0.13.1%2Bcu113-cp39-cp39-linux_x86_64.whl (23.4 MB)
+Collecting timm==0.3.2 (from -r env/satmae_requirements.txt (line 7))
+  Downloading timm-0.3.2-py3-none-any.whl.metadata (19 kB)
+Collecting numpy==1.23.5 (from -r env/satmae_requirements.txt (line 8))
+  Downloading numpy-1.23.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.3 kB)
+Collecting typing-extensions (from torch==1.12.1+cu113->-r env/satmae_requirements.txt (line 5))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting requests (from torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Collecting pillow!=8.3.*,>=5.3.0 (from torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.0 kB)
+Collecting charset_normalizer<4,>=2 (from requests->torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading charset_normalizer-3.5.2-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+Collecting idna<4,>=2.5 (from requests->torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting urllib3<3,>=1.21.1 (from requests->torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting certifi>=2017.4.17 (from requests->torchvision==0.13.1+cu113->-r env/satmae_requirements.txt (line 6))
+  Downloading certifi-2026.11.20-py3-none-any.whl.metadata (2.5 kB)
+Downloading timm-0.3.2-py3-none-any.whl (244 kB)
+Downloading numpy-1.23.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.1 MB)
+Downloading pillow-11.3.0-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.6 MB)
+Downloading requests-2.32.5-py3-none-any.whl (64 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading certifi-2026.11.20-py3-none-any.whl (127 kB)
+Downloading charset_normalizer-3.5.2-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (271 kB)
+Downloading idna-3.20-py3-none-any.whl (69 kB)
+Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+Installing collected packages: urllib3, typing-extensions, pillow, numpy, idna, charset_normalizer, certifi, torch, requests, torchvision, timm
+Successfully installed certifi-2026.11.20 charset_normalizer-3.5.2 idna-3.20 numpy-1.23.5 pillow-11.3.0 requests-2.32.5 timm-0.3.2 torch-1.12.1+cu113 torchvision-0.13.1+cu113 typing-extensions-4.16.0 urllib3-2.6.3
+   torch 1.12.1+cu113 cuda 11.3 torchvision 0.13.1+cu113 timm 0.3.2
+== Pretrained checkpoint
+   downloaded, md5 OK
+   sha256 1b120cbe1beac0b70a53cc3554b13f1c1025ee3b3e360986d01095010ef9bb64  pretrain-vit-large-e199.pth
+== SETUP SATMAE COMPLETED  end=2026-11-22T19:34:28-05:00
+---------------------------------------
+Begin Slurm Epilog: Nov-22-2026 19:34:28
+Job ID:        7245716
+User ID:       sjin308
+Account:       coc
+Job name:      poc-setup-satmae
+Resources:     cpu=4,mem=16G,node=1
+Rsrc Used:     cput=01:12:28,vmem=0,walltime=00:18:07,mem=8417164K,energy_used=0
+Partition:     coc-cpu
+QOS:           coc-ice
+Nodes:         atl1-1-02-010-2-2
+---------------------------------------

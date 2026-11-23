@@ -1,0 +1,82 @@
+{
+  "model": "SatMAE ViT-Large group-channel, pretrained",
+  "checkpoint": "/home/hice1/sjin308/scratch/clay/satmae-landcover/weights/pretrain-vit-large-e199.pth",
+  "load": {
+    "loaded_tensors": 299,
+    "missing": [
+      "channel_cls_embed"
+    ],
+    "ignored_decoder_tensors": 109,
+    "checkpoint_epoch": 199
+  },
+  "input": {
+    "size": 96,
+    "resize": 109,
+    "patch": 8,
+    "groups": [
+      [
+        0,
+        1,
+        2,
+        6
+      ],
+      [
+        3,
+        4,
+        5,
+        7
+      ],
+      [
+        8,
+        9
+      ]
+    ],
+    "dropped": [
+      0,
+      9,
+      10
+    ]
+  },
+  "variants": {
+    "satmae": {
+      "band_file_indices_in_satmae_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        12,
+        8,
+        9,
+        10,
+        11
+      ],
+      "images": 27000,
+      "seconds": 723.3
+    },
+    "satmae_as_published": {
+      "band_file_indices_in_satmae_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "images": 27000,
+      "seconds": 822.3
+    }
+  },
+  "torch": "1.12.1+cu113",
+  "gpu": "Tesla V100-PCIE-16GB"
+}

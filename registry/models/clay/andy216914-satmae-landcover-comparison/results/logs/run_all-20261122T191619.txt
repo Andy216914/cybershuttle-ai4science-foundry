@@ -1,0 +1,5 @@
+submitted 2026-11-22T19:16:19-05:00 by sjin308 from login-ice-gnr-2.pace.gatech.edu
+commit 2d29fa7  folder tree bb5456921429d788f723805e4dc9844a901e4f7c  uncommitted code changes: 0
+CLAY_WORKDIR /home/hice1/sjin308/scratch/clay
+clay setup jobs: 7245710 7245711
+prepare=7245715 setup_satmae=7245716 extract_features=7245717 (gpu:v100:1, coc-gpu) linear_probe=7245718

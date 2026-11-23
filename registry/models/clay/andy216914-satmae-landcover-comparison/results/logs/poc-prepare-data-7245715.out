@@ -1,0 +1,40 @@
+---------------------------------------
+Begin Slurm Prolog: Nov-22-2026 19:29:18
+Job ID:    7245715
+User ID:   sjin308
+Account:   coc
+Job name:  poc-prepare-data
+Partition: coc-cpu
+QOS:       coc-ice
+---------------------------------------
+== poc-prepare-data  job=7245715  node=atl1-1-01-005-3-1.pace.gatech.edu  start=2026-11-22T19:29:19-05:00
+== commit 2d29fa7  folder tree bb5456921429d788f723805e4dc9844a901e4f7c  uncommitted code changes: 0
+== Download (skipped when already present with the right checksum)
+   downloaded, sha256 OK: EuroSATallBands.zip
+   downloaded, sha256 OK: eurosat-train.txt
+   downloaded, sha256 OK: eurosat-val.txt
+   downloaded, sha256 OK: eurosat-test.txt
+== Unpack
+   27000 images
+== Pack and check band order
+   packed 5000 / 27000
+   packed 10000 / 27000
+   packed 15000 / 27000
+   packed 20000 / 27000
+   packed 25000 / 27000
+== band layout: torchgeo (darkest band at file index 9; B8A at 12, correlation with B08 0.998)
+== packed 27000 images: {'train': 16200, 'val': 5400, 'test': 5400}
+PREPARE COMPLETED
+== PREPARE DATA COMPLETED  end=2026-11-22T19:34:00-05:00
+---------------------------------------
+Begin Slurm Epilog: Nov-22-2026 19:34:00
+Job ID:        7245715
+User ID:       sjin308
+Account:       coc
+Job name:      poc-prepare-data
+Resources:     cpu=4,mem=32G,node=1
+Rsrc Used:     cput=00:18:48,vmem=0,walltime=00:04:42,mem=6490980K,energy_used=0
+Partition:     coc-cpu
+QOS:           coc-ice
+Nodes:         atl1-1-01-005-3-1
+---------------------------------------

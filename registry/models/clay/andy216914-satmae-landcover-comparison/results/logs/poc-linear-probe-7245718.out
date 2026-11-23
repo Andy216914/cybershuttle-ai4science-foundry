@@ -1,0 +1,26 @@
+---------------------------------------
+Begin Slurm Prolog: Nov-22-2026 20:05:36
+Job ID:    7245718
+User ID:   sjin308
+Account:   coc
+Job name:  poc-linear-probe
+Partition: coc-cpu
+QOS:       coc-ice
+---------------------------------------
+== poc-linear-probe  job=7245718  node=atl1-1-01-005-3-1.pace.gatech.edu  start=2026-11-22T20:05:36-05:00
+== commit 2d29fa7  folder tree bb5456921429d788f723805e4dc9844a901e4f7c  uncommitted code changes: 0
+== majority               test accuracy 0.1026 [0.0948, 0.1109]  best C None
+== spectral               test accuracy 0.8772 [0.8689, 0.8859]  best C 10.0
+== clay                   test accuracy 0.9776 [0.9737, 0.9817]  best C 0.01
+---------------------------------------
+Begin Slurm Epilog: Nov-22-2026 20:29:17
+Job ID:        7245718
+User ID:       sjin308
+Account:       coc
+Job name:      poc-linear-probe
+Resources:     cpu=8,mem=32G,node=1
+Rsrc Used:     cput=03:09:12,vmem=0,walltime=00:23:39,mem=1889372K,energy_used=0
+Partition:     coc-cpu
+QOS:           coc-ice
+Nodes:         atl1-1-01-005-3-1
+---------------------------------------
